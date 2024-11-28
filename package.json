@@ -19,7 +19,15 @@
     "@mantine/spotlight": "^7.3.2",
     "@mantine/tiptap": "^7.3.2",
     "@tabler/icons-react": "^2.44.0",
-    "@tauri-apps/api": "^1.4.0",
+    "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/plugin-dialog": "~2",
+    "@tauri-apps/plugin-fs": "~2",
+    "@tauri-apps/plugin-notification": "~2",
+    "@tauri-apps/plugin-os": "~2",
+    "@tauri-apps/plugin-process": "~2",
+    "@tauri-apps/plugin-shell": "~2",
+    "@tauri-apps/plugin-store": "~2",
+    "@tauri-apps/plugin-updater": "~2",
     "@tiptap/core": "^2.0.3",
     "@tiptap/extension-link": "^2.1.13",
     "@tiptap/pm": "^2.0.3",
@@ -37,8 +45,7 @@
     "react-icons": "^4.9.0",
     "react-router-dom": "^6.13.0",
     "react-transition-group": "^4.4.5",
-    "simplebar-react": "^3.2.4",
-    "tauri-plugin-store-api": "https://github.com/tauri-apps/tauri-plugin-store"
+    "simplebar-react": "^3.2.4"
   },
   "scripts": {
     "dev": "tauri dev",
@@ -63,7 +70,7 @@
     ]
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^1.4.0",
+    "@tauri-apps/cli": "^2.1.0",
     "@vitejs/plugin-react": "^4.0.0",
     "chai": "^4.3.7",
     "concurrently": "^8.2.0",

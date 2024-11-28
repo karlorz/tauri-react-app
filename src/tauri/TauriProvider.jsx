@@ -1,13 +1,16 @@
 import { useInterval } from '@mantine/hooks';
-import * as fs from '@tauri-apps/api/fs';
-import * as os from '@tauri-apps/api/os';
+import * as fs from '@tauri-apps/plugin-fs';
+import * as os from '@tauri-apps/plugin-os';
 import * as tauriPath from '@tauri-apps/api/path';
-import { appWindow, currentMonitor, getCurrent } from '@tauri-apps/api/window';
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
+import { currentMonitor, getCurrentWindow } from '@tauri-apps/api/window';
 import React, { useContext, useEffect, useState } from 'react';
 import tauriConfJson from '../../src-tauri/tauri.conf.json';
+const appWindow = getCurrentWebviewWindow()
+const getCurrent = getCurrentWindow();
 
 const WIN32_CUSTOM_TITLEBAR = true;
-export const APP_NAME = tauriConfJson.package.productName;
+export const APP_NAME = tauriConfJson.productName;
 export const RUNNING_IN_TAURI = window.__TAURI__ !== undefined;
 const EXTS = new Set(['.json']);
 

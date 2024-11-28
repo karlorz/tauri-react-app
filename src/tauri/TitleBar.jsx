@@ -1,11 +1,12 @@
 import { Menu, Text, UnstyledButton } from '@mantine/core';
 import { useInterval } from '@mantine/hooks';
-import { appWindow } from '@tauri-apps/api/window';
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { VscChromeClose, VscChromeMaximize, VscChromeMinimize, VscChromeRestore } from 'react-icons/vsc';
 import AppIcon from '../../src-tauri/icons/32x32.png';
 import classes from './TitleBar.module.css';
+const appWindow = getCurrentWebviewWindow()
 
 export function TitleBar() {
   const { t } = useTranslation();

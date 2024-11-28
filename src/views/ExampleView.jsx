@@ -2,15 +2,16 @@
 import { Text, Anchor, Space, Button, Title, TextInput } from '@mantine/core';
 import { Trans, useTranslation } from 'react-i18next';
 
-import * as fs from '@tauri-apps/api/fs';
-import * as shell from '@tauri-apps/api/shell';
-import { invoke } from '@tauri-apps/api/tauri'
+import * as fs from '@tauri-apps/plugin-fs';
+import * as shell from '@tauri-apps/plugin-shell';
+import { invoke } from '@tauri-apps/api/core'
 
 import { notifications } from '@mantine/notifications';
 import { APP_NAME, RUNNING_IN_TAURI, useMinWidth, useTauriContext } from '../tauri/TauriProvider';
-import { appWindow } from '@tauri-apps/api/window'
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { createStorage } from '../tauri/storage';
 import { notify } from '../common/utils';
+const appWindow = getCurrentWebviewWindow()
 
 
 function toggleFullscreen() {

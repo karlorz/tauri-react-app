@@ -2,9 +2,9 @@ import { ActionIcon, AppShell, AppShellAside, AppShellFooter, AppShellHeader, Ap
 import { useDisclosure, useHotkeys } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import * as tauriEvent from '@tauri-apps/api/event';
-import { relaunch } from '@tauri-apps/api/process';
-import { checkUpdate, installUpdate } from '@tauri-apps/api/updater';
-import { appWindow } from '@tauri-apps/api/window';
+import { relaunch } from '@tauri-apps/plugin-process';
+// import { checkUpdate, installUpdate } from '@tauri-apps/plugin-updater';
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsMoonStarsFill } from 'react-icons/bs';
@@ -21,6 +21,7 @@ import { ScrollToTop } from './components/ScrollToTop';
 import { RUNNING_IN_TAURI, useTauriContext } from './tauri/TauriProvider';
 // imported views need to be added to the `views` list variable
 import ExampleView from './views/ExampleView';
+const appWindow = getCurrentWebviewWindow()
 // fallback for React Suspense
 // import Home from './Views/Home';
 // import About from './Views/About';
@@ -89,23 +90,23 @@ export default function () {
     }, []);
 
     // update checker
-    useEffect(() => {
-      checkUpdate().then(({ shouldUpdate, manifest }) => {
-        if (shouldUpdate) {
-          const { version: newVersion, body: releaseNotes } = manifest;
-          const color = colorScheme === 'dark' ? 'teal' : 'teal.8';
-          notifications.show({
-            title: t('Update v{{ v }} available', { v: newVersion }),
-            color,
-            message: <>
-              <Text>{releaseNotes}</Text>
-              <Button color={color} style={{ width: '100%' }} onClick={() => startInstall(newVersion)}>{t('Install update and relaunch')}</Button>
-            </>,
-            autoClose: false
-          });
-        }
-      });
-    }, []);
+    // useEffect(() => {
+    //   checkUpdate().then(({ shouldUpdate, manifest }) => {
+    //     if (shouldUpdate) {
+    //       const { version: newVersion, body: releaseNotes } = manifest;
+    //       const color = colorScheme === 'dark' ? 'teal' : 'teal.8';
+    //       notifications.show({
+    //         title: t('Update v{{ v }} available', { v: newVersion }),
+    //         color,
+    //         message: <>
+    //           <Text>{releaseNotes}</Text>
+    //           <Button color={color} style={{ width: '100%' }} onClick={() => startInstall(newVersion)}>{t('Install update and relaunch')}</Button>
+    //         </>,
+    //         autoClose: false
+    //       });
+    //     }
+    //   });
+    // }, []);
 
     // Handle additional app launches (url, etc.)
     useEffect(() => {

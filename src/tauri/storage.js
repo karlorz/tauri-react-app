@@ -1,7 +1,7 @@
 // API for Tauri or web storage
 import localforage from 'localforage';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Store } from 'tauri-plugin-store-api';
+import { Store } from '@tauri-apps/plugin-store';
 import { useTauriContext } from './TauriProvider';
 // docs: https://github.com/tauri-apps/tauri-plugin-store/blob/dev/webview-src/index.ts
 
