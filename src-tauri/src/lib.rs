@@ -88,6 +88,7 @@ pub fn run() {
     // if you remove this, make sure to uncomment the show_main_window code
     //  in this file and TauriProvider.jsx
     .plugin(tauri_plugin_window_state::Builder::default().build())
+    // .manage(Mutex::new(TrayState::NotPlaying))
     // custom setup code
     .setup(|app| {
       app.manage(Mutex::new(TrayState::NotPlaying));

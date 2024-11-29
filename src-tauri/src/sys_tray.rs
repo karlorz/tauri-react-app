@@ -19,6 +19,7 @@ impl SystemTrayPayload {
   }
 }
 
+#[derive(Debug)]
 pub enum TrayState {
   NotPlaying,
   Paused,
@@ -60,15 +61,16 @@ pub fn create_system_tray<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<TrayI
 #[tauri::command]
 #[allow(unused_must_use)]
 pub fn tray_update_lang(app: tauri::AppHandle, lang: String) {
-  let tray_handle = app.tray_by_id("main-tray").unwrap();
-  let new_menu = create_tray_menu(&app, lang);
-  tray_handle.set_menu(new_menu.ok()).unwrap();
+  // let tray_handle = app.tray_by_id("main-tray").unwrap();
+  // let new_menu = create_tray_menu(&app, lang);
+  // tray_handle.set_menu(new_menu.ok()).unwrap();
 }
 
 pub fn create_tray_icon(app: &tauri::AppHandle) -> tauri::Result<()> {
   let tray_menu = create_tray_menu(&app, "en".into());
-  let tray = TrayIconBuilder::with_id("main-tray")
-    // .with_id("main-tray")
+  let _tray = TrayIconBuilder::with_id("main-tray")
+    // .icon(app.default_window_icon().unwrap().clone())
+    .icon(tauri::image::Image::from_bytes(include_bytes!("../icons/SystemTray1.ico"))?)
     .menu(&tray_menu?)
     .on_menu_event(|app, event| {
       let id = event.id();

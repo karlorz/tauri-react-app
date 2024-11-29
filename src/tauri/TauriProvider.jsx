@@ -104,7 +104,7 @@ export async function getUserAppFiles() {
   const documents = await tauriPath.documentDir();
   const saveFiles = [];
   await fs.mkdir(APP_NAME, { baseDir: fs.BaseDirectory.Document, recursive: true });
-  const entries = await fs.readDir(APP_NAME, { dir: fs.BaseDirectory.AppData, recursive: true });
+  const entries = await fs.readDir(APP_NAME, { baseDir: fs.BaseDirectory.AppData, recursive: true });
   if (entries !== null) {
     const osType = await os.type();
     const sep = osType === 'windows' ? '\\' : '/'

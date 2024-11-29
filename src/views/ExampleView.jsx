@@ -35,7 +35,7 @@ export default function ExampleView() {
         if (RUNNING_IN_TAURI) {
             // https://tauri.app/v1/api/js/modules/fs
             const filePath = `${downloads}/example_file.txt`;
-            await fs.writeTextFile('example_file.txt', 'oh this is from TAURI! COOLIO.\n', { dir: fs.BaseDirectory.Download });
+            await fs.writeTextFile('example_file.txt', 'oh this is from TAURI! COOLIO.\n', { baseDir: fs.BaseDirectory.Download });
             // show in file explorer: https://github.com/tauri-apps/tauri/issues/4062
             await shell.open(downloads);
             await invoke('process_file', { filepath: filePath }).then(msg => {
