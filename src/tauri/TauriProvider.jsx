@@ -3,15 +3,15 @@ import * as fs from '@tauri-apps/plugin-fs';
 import * as os from '@tauri-apps/plugin-os';
 import * as tauriPath from '@tauri-apps/api/path';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-import { currentMonitor, getCurrentWindow } from '@tauri-apps/api/window';
+import { currentMonitor } from '@tauri-apps/api/window';
 import React, { useContext, useEffect, useState } from 'react';
 import tauriConfJson from '../../src-tauri/tauri.conf.json';
 const appWindow = getCurrentWebviewWindow()
-const getCurrent = getCurrentWindow();
+const getCurrent = getCurrentWebviewWindow();
 
 const WIN32_CUSTOM_TITLEBAR = true;
 export const APP_NAME = tauriConfJson.productName;
-export const RUNNING_IN_TAURI = window.__TAURI__ !== undefined;
+export const RUNNING_IN_TAURI = '__TAURI_INTERNALS__' in window;
 const EXTS = new Set(['.json']);
 
 // NOTE: Add memoized Tauri calls in this file
@@ -54,7 +54,7 @@ export function TauriProvider({ children }) {
     }, []);
 
     useEffect(() => {
-      if (osType === 'Windows_NT') {
+      if (osType === 'windows') {
         appWindow.setDecorations(!WIN32_CUSTOM_TITLEBAR);
         if (WIN32_CUSTOM_TITLEBAR) {
           root.style.setProperty('--titlebar-height', '28px');
@@ -64,7 +64,7 @@ export function TauriProvider({ children }) {
 
     useEffect(() => {
       // hide titlebar when: in fullscreen, not on Windows, and explicitly allowing custom titlebar
-      setUsingCustomTitleBar(!isFullScreen && osType === 'Windows_NT' && WIN32_CUSTOM_TITLEBAR);
+      setUsingCustomTitleBar(!isFullScreen && osType === 'windows' && WIN32_CUSTOM_TITLEBAR);
     }, [isFullScreen, osType]);
 
     useEffect(() => {
@@ -75,9 +75,9 @@ export function TauriProvider({ children }) {
         setDocumentDir(_documents);
         const _osType = await os.type();
         setOsType(_osType);
-        const _fileSep = _osType === 'Windows_NT' ? '\\' : '/';
+        const _fileSep = _osType === 'windows' ? '\\' : '/';
         setFileSep(_fileSep);
-        await fs.createDir(APP_NAME, { dir: fs.BaseDirectory.Document, recursive: true });
+        // await fs.createDir(APP_NAME, { dir: fs.BaseDirectory.Document, recursive: true });
         setAppDocuments(`${_documents}${APP_NAME}`);
         setLoading(false);
         // if you aren't using the window-state plugin,
@@ -107,7 +107,7 @@ export async function getUserAppFiles() {
   const entries = await fs.readDir(APP_NAME, { dir: fs.BaseDirectory.AppData, recursive: true });
   if (entries !== null) {
     const osType = await os.type();
-    const sep = osType === 'Windows_NT' ? '\\' : '/'
+    const sep = osType === 'windows' ? '\\' : '/'
     const appFolder = `${documents}${sep}${APP_NAME}`;
     for (const { path } of flattenFiles(entries)) {
       const friendlyName = path.substring(appFolder.length + 1, path.length);

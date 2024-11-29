@@ -163,6 +163,7 @@ export default function () {
         className={classes.appShell}>
         <AppShellMain>
           {usingCustomTitleBar && <Space h='xl' />}
+          {/*}
           <Routes>
             <Route exact path='/' element={<Navigate to={views[0].path} />} />
             {views.map((view, index) => <Route key={index} exact={view.exact}
@@ -170,6 +171,7 @@ export default function () {
                 <view.component />
               } />)}
           </Routes>
+          */}
           {/* prevent the footer from covering bottom text of a route view */}
           <Space h={showFooter ? 80 : 50} />
           {scrollbarRef.current && (
