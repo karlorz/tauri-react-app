@@ -3,11 +3,11 @@ import * as fs from '@tauri-apps/plugin-fs';
 import * as os from '@tauri-apps/plugin-os';
 import * as tauriPath from '@tauri-apps/api/path';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-import { currentMonitor } from '@tauri-apps/api/window';
+import { currentMonitor, getCurrentWindow } from '@tauri-apps/api/window';
 import React, { useContext, useEffect, useState } from 'react';
 import tauriConfJson from '../../src-tauri/tauri.conf.json';
 const appWindow = getCurrentWebviewWindow()
-const getCurrent = getCurrentWebviewWindow();
+const getCurrent = getCurrentWindow;
 
 const WIN32_CUSTOM_TITLEBAR = true;
 export const APP_NAME = tauriConfJson.productName;
@@ -77,7 +77,7 @@ export function TauriProvider({ children }) {
         setOsType(_osType);
         const _fileSep = _osType === 'windows' ? '\\' : '/';
         setFileSep(_fileSep);
-        // await fs.createDir(APP_NAME, { dir: fs.BaseDirectory.Document, recursive: true });
+        await fs.mkdir(APP_NAME, { baseDir: fs.BaseDirectory.Document, recursive: true });
         setAppDocuments(`${_documents}${APP_NAME}`);
         setLoading(false);
         // if you aren't using the window-state plugin,
@@ -103,7 +103,7 @@ export async function getUserAppFiles() {
   // returns [] if $DOCUMENT/$APP_NAME is a file
   const documents = await tauriPath.documentDir();
   const saveFiles = [];
-  await fs.createDir(APP_NAME, { dir: fs.BaseDirectory.Document, recursive: true });
+  await fs.mkdir(APP_NAME, { baseDir: fs.BaseDirectory.Document, recursive: true });
   const entries = await fs.readDir(APP_NAME, { dir: fs.BaseDirectory.AppData, recursive: true });
   if (entries !== null) {
     const osType = await os.type();

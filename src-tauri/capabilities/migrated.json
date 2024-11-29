@@ -11,10 +11,11 @@
     "fs:allow-read-dir",
     "fs:allow-mkdir",
     "fs:allow-create",
+    "fs:write-files",
     {
       "identifier": "fs:scope",
       "allow": [
-        "$APP/*",
+        "$APPDATA/*",
         "$DOCUMENT/*",
         "$DOWNLOAD/*"
       ]
