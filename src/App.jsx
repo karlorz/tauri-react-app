@@ -3,7 +3,7 @@ import { useDisclosure, useHotkeys } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import * as tauriEvent from '@tauri-apps/api/event';
 import { relaunch } from '@tauri-apps/plugin-process';
-// import { checkUpdate, installUpdate } from '@tauri-apps/plugin-updater';
+import { check } from '@tauri-apps/plugin-updater';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -62,10 +62,14 @@ export default function () {
   }, [footersSeen]);
 
   // Updater integration
+  const [update, setUpdate] = useState(null);
 
   function startInstall(newVersion) {
     notifications.show({ title: t('Installing update v{{ v }}', { v: newVersion }), message: t('Will relaunch afterwards'), autoClose: false });
-    installUpdate().then(relaunch);
+    update.downloadAndInstall().then(() =>{
+      // Relaunch the application after installation
+      relaunch();
+    });
   }
 
   // Tauri event listeners (run on mount)
@@ -90,23 +94,35 @@ export default function () {
     }, []);
 
     // update checker
-    // useEffect(() => {
-    //   checkUpdate().then(({ shouldUpdate, manifest }) => {
-    //     if (shouldUpdate) {
-    //       const { version: newVersion, body: releaseNotes } = manifest;
-    //       const color = colorScheme === 'dark' ? 'teal' : 'teal.8';
-    //       notifications.show({
-    //         title: t('Update v{{ v }} available', { v: newVersion }),
-    //         color,
-    //         message: <>
-    //           <Text>{releaseNotes}</Text>
-    //           <Button color={color} style={{ width: '100%' }} onClick={() => startInstall(newVersion)}>{t('Install update and relaunch')}</Button>
-    //         </>,
-    //         autoClose: false
-    //       });
-    //     }
-    //   });
-    // }, []);
+    useEffect(() => {
+      check().then((update) => {
+        console.log(
+          `found update ${update.version} from ${update.date} with notes ${update.body}`
+        );
+        // if (Update && Update.available) {
+        //   setUpdate(Update); // Store the Update object
+        //   const { version: newVersion, body: releaseNotes } = Update;
+        //   const color = colorScheme === 'dark' ? 'teal' : 'teal.8';
+        //   notifications.show({
+        //     title: t('Update v{{ v }} available', { v: newVersion }),
+        //     color,
+        //     message: <>
+        //       <Text>{releaseNotes}</Text>
+        //       <Button color={color} style={{ width: '100%' }} onClick={() => startInstall(newVersion)}>{t('Install update and relaunch')}</Button>
+        //     </>,
+        //     autoClose: false
+        //   });
+        // }
+      })
+      // .catch((e) => {
+      //   console.error(e);
+      //   notifications.show({
+      //     title: t('Update check failed'),
+      //     message: t('Please check your internet connection and try again'),
+      //     color: 'red'
+      //   });
+      // });
+    }, [t]);
 
     // Handle additional app launches (url, etc.)
     useEffect(() => {

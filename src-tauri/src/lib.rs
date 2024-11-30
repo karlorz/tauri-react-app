@@ -68,8 +68,6 @@ pub fn run() {
     .plugin(tauri_plugin_store::Builder::new().build())
     .plugin(tauri_plugin_process::init())
     .plugin(tauri_plugin_notification::init())
-    // .system_tray(create_system_tray())
-    // .on_system_tray_event(|app, event| tray_event_handler(app, event))
     // custom commands
     .invoke_handler(tauri::generate_handler![
       tray_update_lang,

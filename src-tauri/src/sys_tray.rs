@@ -2,8 +2,8 @@ use serde::Serialize;
 use std::sync::Mutex;
 use tauri::{
   Manager, AppHandle, Emitter, Runtime,
-  menu::{Menu, Submenu, MenuItem, PredefinedMenuItem, MenuBuilder, MenuItemBuilder, MenuItemKind, SubmenuBuilder},
-  tray::{TrayIconBuilder, TrayIconEvent, TrayIcon},
+  menu::{Menu, MenuBuilder, SubmenuBuilder},
+  tray::{TrayIconBuilder, TrayIconEvent},
 };
 
 #[derive(Clone, Serialize)]
@@ -19,7 +19,6 @@ impl SystemTrayPayload {
   }
 }
 
-#[derive(Debug)]
 pub enum TrayState {
   NotPlaying,
   Paused,
@@ -51,19 +50,19 @@ pub fn create_tray_menu<R: Runtime>(app: &AppHandle<R>, lang: String) -> tauri::
   Ok(menu)
 }
 
-pub fn create_system_tray<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<TrayIconBuilder<R>> {
-  Ok(
-    TrayIconBuilder::with_id("main-tray")
-      .menu(&create_tray_menu(app, "en".into())?)
-  )
-}
+// pub fn create_system_tray<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<TrayIconBuilder<R>> {
+//   Ok(
+//     TrayIconBuilder::with_id("main-tray")
+//       .menu(&create_tray_menu(app, "en".into())?)
+//   )
+// }
 
 #[tauri::command]
 #[allow(unused_must_use)]
 pub fn tray_update_lang(app: tauri::AppHandle, lang: String) {
-  // let tray_handle = app.tray_by_id("main-tray").unwrap();
-  // let new_menu = create_tray_menu(&app, lang);
-  // tray_handle.set_menu(new_menu.ok()).unwrap();
+  let tray_handle = app.tray_by_id("main-tray").unwrap();
+  let new_menu = create_tray_menu(&app, lang);
+  tray_handle.set_menu(new_menu.ok()).unwrap();
 }
 
 pub fn create_tray_icon(app: &tauri::AppHandle) -> tauri::Result<()> {
