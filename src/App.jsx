@@ -61,11 +61,8 @@ export default function () {
     if (footerRef.current) setNavbarClearance(footerRef.current.clientHeight);
   }, [footersSeen]);
 
-  // Updater integration
-  const [update, setUpdate] = useState(null);
-
-  function startInstall(newVersion) {
-    notifications.show({ title: t('Installing update v{{ v }}', { v: newVersion }), message: t('Will relaunch afterwards'), autoClose: false });
+  async function startInstall(update) {
+    notifications.show({ title: t('Installing update v{{ v }}', { v: update.version }), message: t('Will relaunch afterwards'), autoClose: false });
     update.downloadAndInstall().then(() =>{
       // Relaunch the application after installation
       relaunch();
@@ -95,24 +92,27 @@ export default function () {
 
     // update checker
     useEffect(() => {
+      console.log('Checking for updates');
       check().then((update) => {
-        console.log(
-          `found update ${update}: `
-        );
-        // if (update && update.available) {
-        //   setUpdate(update); // Store the Update object
-        //   const { version: newVersion, body: releaseNotes } = update;
-        //   const color = colorScheme === 'dark' ? 'teal' : 'teal.8';
-        //   notifications.show({
-        //     title: t('Update v{{ v }} available', { v: newVersion }),
-        //     color,
-        //     message: <>
-        //       <Text>{releaseNotes}</Text>
-        //       <Button color={color} style={{ width: '100%' }} onClick={() => startInstall(newVersion)}>{t('Install update and relaunch')}</Button>
-        //     </>,
-        //     autoClose: false
-        //   });
-        // }
+        if (update && update.available) {
+          // setUpdate(update); // Store the Update object
+          const { version: newVersion, body: releaseNotes } = update;
+          const color = colorScheme === 'dark' ? 'teal' : 'teal.8';
+          notifications.show({
+            id: 'update-available',
+            autoClose: false
+          });
+          notifications.update({
+            id: 'update-available',
+            title: t('Update v{{ v }} available', { v: newVersion }),
+            color,
+            message: <>
+              <Text>{releaseNotes}</Text>
+              <Button color={color} style={{ width: '100%' }} onClick={() => startInstall(update)}>{t('Install update and relaunch')}</Button>
+            </>,
+            autoClose: false
+          });
+        }
       })
       .catch((e) => {
         console.error(e);
