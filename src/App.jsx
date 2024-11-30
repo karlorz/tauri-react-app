@@ -97,11 +97,11 @@ export default function () {
     useEffect(() => {
       check().then((update) => {
         console.log(
-          `found update ${update.version} from ${update.date} with notes ${update.body}`
+          `found update ${update}: `
         );
-        // if (Update && Update.available) {
-        //   setUpdate(Update); // Store the Update object
-        //   const { version: newVersion, body: releaseNotes } = Update;
+        // if (update && update.available) {
+        //   setUpdate(update); // Store the Update object
+        //   const { version: newVersion, body: releaseNotes } = update;
         //   const color = colorScheme === 'dark' ? 'teal' : 'teal.8';
         //   notifications.show({
         //     title: t('Update v{{ v }} available', { v: newVersion }),
@@ -114,15 +114,15 @@ export default function () {
         //   });
         // }
       })
-      // .catch((e) => {
-      //   console.error(e);
-      //   notifications.show({
-      //     title: t('Update check failed'),
-      //     message: t('Please check your internet connection and try again'),
-      //     color: 'red'
-      //   });
-      // });
-    }, [t]);
+      .catch((e) => {
+        console.error(e);
+        notifications.show({
+          title: t('Update check failed'),
+          message: t('Please check your internet connection and try again'),
+          color: 'red'
+        });
+      });
+    }, [t, colorScheme]);
 
     // Handle additional app launches (url, etc.)
     useEffect(() => {
