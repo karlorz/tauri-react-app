@@ -47,7 +47,8 @@
   "identifier": "com.tauri-app.app",
   "plugins": {
     "updater": {
-      "pubkey": ""
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEM4MDI0NEQyQTM2MzBGNjkKUldScEQyT2owa1FDeUMxSFNwZC9uZzBiRHhzbjdaZWE5di9DWjlCVDMxRnVhYkFhdWxqKzVMcHEK",
+      "endpoints": "https://api.github.com/repos/karlorz/tauri-react-app/releases/latest"
     }
   },
   "app": {
