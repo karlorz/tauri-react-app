@@ -23,7 +23,8 @@
     "longDescription": "",
     "macOS": {
       "frameworks": [],
-      "minimumSystemVersion": "10.13",
+      "minimumSystemVersion": "",
+      "exceptionDomain": "",
       "signingIdentity": null,
       "entitlements": null
     },
