@@ -11,7 +11,7 @@ env:
 
 jobs:
   changelog:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -71,7 +71,7 @@ jobs:
             args: '--target aarch64-apple-darwin'
           - platform: 'macos-latest' # for Intel based macs.
             args: '--target x86_64-apple-darwin'
-          - platform: 'ubuntu-20.04' # for Tauri v1 you could replace this with ubuntu-20.04.
+          - platform: 'ubuntu-22.04' # for Tauri v1 you could replace this with ubuntu-20.04.
             args: ''
           - platform: 'windows-latest'
             args: ''
@@ -111,7 +111,7 @@ jobs:
           workspaces: './src-tauri -> target'
 
       - name: Install Ubuntu dependencies
-        if: matrix.platform == 'ubuntu-20.04'
+        if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt update
           xargs sudo apt install -y < environment/apt_packages.txt
@@ -143,7 +143,7 @@ jobs:
             src-tauri/target/release/bundle/dmg/*.dmg
 
       - name: CI Upload Linux
-        if: ${{ github.ref_type == 'branch' && matrix.platform == 'ubuntu-20.04' }}
+        if: ${{ github.ref_type == 'branch' && matrix.platform == 'ubuntu-22.04' }}
         uses: actions/upload-artifact@v4
         with:
           name: 'Linux Distributions - ${{ matrix.platform }}'
