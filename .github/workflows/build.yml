@@ -11,7 +11,7 @@ env:
 
 jobs:
   changelog:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,40 +26,7 @@ jobs:
           echo "changelog=$(git log $PREV_TAG...${{ github.ref_name }} --pretty=format:"- %s")" >> $GITHUB_OUTPUT
     outputs:
       changelog: ${{ steps.build_changelog.outputs.changelog }}
-  # build-arm:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - name: Checkout repository
-  #     uses: actions/checkout@v4
-  #   - name: Setup ARM build environment
-  #     run: |
-  #         rustup target add aarch64-unknown-linux-gnu
-  #         sudo apt install gcc-aarch64-linux-gnu
-  #         sudo dpkg --add-architecture arm64
-  #         . /etc/os-release
-  #         echo "using Ubuntu with codename $VERSION_CODENAME"
-  #         echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports $VERSION_CODENAME main restricted" | sudo tee -a /etc/apt/sources.list
-  #         echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports $VERSION_CODENAME-updates main restricted" | sudo tee -a /etc/apt/sources.list
-  #         echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports $VERSION_CODENAME universe" | sudo tee -a /etc/apt/sources.list
-  #         echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports $VERSION_CODENAME-updates universe" | sudo tee -a /etc/apt/sources.list
-  #         echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports $VERSION_CODENAME multiverse" | sudo tee -a /etc/apt/sources.list
-  #         echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports $VERSION_CODENAME-updates multiverse" | sudo tee -a /etc/apt/sources.list
-  #         echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports $VERSION_CODENAME-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-  #         echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports $VERSION_CODENAME-security main restricted" | sudo tee -a /etc/apt/sources.list
-  #         echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports $VERSION_CODENAME-security universe" | sudo tee -a /etc/apt/sources.list
-  #         echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports $VERSION_CODENAME-security multiverse" | sudo tee -a /etc/apt/sources.list
-  #         sudo apt update
-  #         sudo apt upgrade -y
-  #         sudo apt install libwebkit2gtk-4.0-dev:arm64 -y
-  #         sudo apt install libssl-dev:arm64 -y
-  #         export PKG_CONFIG_SYSROOT_DIR=/usr/aarch64-linux-gnu/
-  #         pnpm install
-  #         pnpm rls --target aarch64-unknown-linux-gnu
-  #   - name: Upload deb bundle
-  #     uses: actions/upload-artifact@v4
-  #     with:
-  #       name: ARM Debian File
-  #       path: src-tauri/target/release/bundle/deb/*arm64.deb
+
   release:
     permissions:
       contents: write
@@ -71,7 +38,7 @@ jobs:
             args: '--target aarch64-apple-darwin'
           - platform: 'macos-latest' # for Intel based macs.
             args: '--target x86_64-apple-darwin'
-          - platform: 'ubuntu-20.04' # for Tauri v1 you could replace this with ubuntu-20.04.
+          - platform: 'ubuntu-22.04' # for Tauri v1 you could replace this with ubuntu-20.04.
             args: ''
           - platform: 'windows-latest'
             args: ''
@@ -86,6 +53,12 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           version: 9
+
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
+        run: |
+          sudo apt-get update
+          xargs sudo apt-get install -y < environment/apt_packages.txt
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -110,18 +83,15 @@ jobs:
         with:
           workspaces: './src-tauri -> target'
 
-      - name: Install Ubuntu dependencies
-        if: matrix.platform == 'ubuntu-20.04'
-        run: |
-          sudo apt update
-          xargs sudo apt install -y < environment/apt_packages.txt
-
       - name: Install frontend
         run: |
           pnpm install
 
       - name: CI Build
         if: ${{ github.ref_type == 'branch' }}
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
           pnpm rls
 
@@ -143,7 +113,7 @@ jobs:
             src-tauri/target/release/bundle/dmg/*.dmg
 
       - name: CI Upload Linux
-        if: ${{ github.ref_type == 'branch' && matrix.platform == 'ubuntu-20.04' }}
+        if: ${{ github.ref_type == 'branch' && matrix.platform == 'ubuntu-22.04' }}
         uses: actions/upload-artifact@v4
         with:
           name: 'Linux Distributions - ${{ matrix.platform }}'
@@ -160,8 +130,8 @@ jobs:
         env:
           CI: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           # tauri-action replaces \_\_VERSION\_\_ with the app version
           tagName: ${{ github.ref_name }}
@@ -171,3 +141,4 @@ jobs:
             See the assets to download this version and install.
           releaseDraft: true
           prerelease: false
+          includeUpdaterJson: true
