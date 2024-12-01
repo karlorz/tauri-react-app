@@ -1,11 +1,11 @@
 // API for Tauri or web storage
 import localforage from 'localforage';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Store } from '@tauri-apps/plugin-store';
-import { useTauriContext } from './TauriProvider';
+import { LazyStore } from '@tauri-apps/plugin-store';
+import { RUNNING_IN_TAURI, useTauriContext } from './TauriProvider';
 // docs: https://github.com/tauri-apps/tauri-plugin-store/blob/dev/webview-src/index.ts
 
-const RUNNING_IN_TAURI = window.__TAURI__ !== undefined;
+// const RUNNING_IN_TAURI = window.__TAURI__ !== undefined;
 export const USE_STORE = false && RUNNING_IN_TAURI;
 // save data after setState
 // https://blog.seethis.link/scan-rate-estimator/
@@ -18,12 +18,12 @@ function keyInObj(obj, key) {
 }
 
 function getTauriStore(filename) {
-    if (!keyInObj(stores, filename)) stores[filename] = new Store(filename);
+    if (!keyInObj(stores, filename)) stores[filename] = new LazyStore(filename);
     return stores[filename];
 }
 
 export async function testStore() {
-    const x = new Store('test.json');
+    const x = new LazyStore('test.json');
     const val = await x.get('DNE');
     await x.set('Exists', 'sad');
     await x.save();

@@ -22,7 +22,7 @@ export default function ExampleView() {
     const { t } = useTranslation();
     const { fileSep, documents, downloads } = useTauriContext();
     // store-plugin will create necessary directories
-    const storeName = `${documents}${APP_NAME}${fileSep}example_view.dat`;
+    const storeName = `${documents}${fileSep}${APP_NAME}${fileSep}example_view.dat`;
     // const storeName = 'data.dat';
     const { use: useKVP, loading, data } = createStorage(storeName);
     const [exampleData, setExampleData] = useKVP('exampleKey', '');
@@ -34,10 +34,10 @@ export default function ExampleView() {
         // run only in desktop/tauri env
         if (RUNNING_IN_TAURI) {
             // https://tauri.app/v1/api/js/modules/fs
-            const filePath = `${downloads}/example_file.txt`;
-            await fs.writeTextFile('example_file.txt', 'oh this is from TAURI! COOLIO.\n', { baseDir: fs.BaseDirectory.Download });
+            const filePath = `${documents}${fileSep}example_file.txt`;
+            await fs.writeTextFile('example_file.txt', 'oh this is from TAURI! COOLIO.\n', { baseDir: fs.BaseDirectory.Document });
             // show in file explorer: https://github.com/tauri-apps/tauri/issues/4062
-            await shell.open(downloads);
+            await shell.open(documents);
             await invoke('process_file', { filepath: filePath }).then(msg => {
                 console.log(msg === 'Hello from Rust!')
                 notify('Message from Rust', msg);

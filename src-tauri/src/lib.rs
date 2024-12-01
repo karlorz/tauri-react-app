@@ -15,7 +15,7 @@ use tauri::{
 };
 use tauri_plugin_store;
 use tauri_plugin_window_state;
-use window_shadows::set_shadow;
+// use window_shadows::set_shadow;
 
 mod sys_tray;
 mod utils;
@@ -90,9 +90,9 @@ pub fn run() {
     // custom setup code
     .setup(|app| {
       app.manage(Mutex::new(TrayState::NotPlaying));
-      // if let Some(window) = app.get_webview_window("main") {
-      //   set_shadow(&window, true).ok(); // don't care if platform is unsupported
-      // }
+      if let Some(window) = app.get_webview_window("main") {
+        window.set_shadow(true).ok(); // Ignore errors if platform is unsupported
+      }
 
       #[cfg(target_os = "linux")]
       app.manage(DbusState(Mutex::new(
