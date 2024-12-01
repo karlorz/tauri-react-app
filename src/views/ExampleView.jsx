@@ -2,26 +2,27 @@
 import { Text, Anchor, Space, Button, Title, TextInput } from '@mantine/core';
 import { Trans, useTranslation } from 'react-i18next';
 
-import * as fs from '@tauri-apps/api/fs';
-import * as shell from '@tauri-apps/api/shell';
-import { invoke } from '@tauri-apps/api/tauri'
+import * as fs from '@tauri-apps/plugin-fs';
+import * as shell from '@tauri-apps/plugin-shell';
+import { invoke } from '@tauri-apps/api/core'
 
 import { notifications } from '@mantine/notifications';
 import { APP_NAME, RUNNING_IN_TAURI, useMinWidth, useTauriContext } from '../tauri/TauriProvider';
-import { appWindow } from '@tauri-apps/api/window'
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { createStorage } from '../tauri/storage';
-import { notify } from '../common/utils';
+import { notify, FOOTER } from '../common/utils';
+const appWindow = getCurrentWebviewWindow()
 
 
 function toggleFullscreen() {
     appWindow.isFullscreen().then(x => appWindow.setFullscreen(!x));
 }
 
-export default function ExampleView() {
+export default function ExampleView(props) {
     const { t } = useTranslation();
     const { fileSep, documents, downloads } = useTauriContext();
     // store-plugin will create necessary directories
-    const storeName = `${documents}${APP_NAME}${fileSep}example_view.dat`;
+    const storeName = `${documents}${fileSep}${APP_NAME}${fileSep}example_view.dat`;
     // const storeName = 'data.dat';
     const { use: useKVP, loading, data } = createStorage(storeName);
     const [exampleData, setExampleData] = useKVP('exampleKey', '');
@@ -33,10 +34,10 @@ export default function ExampleView() {
         // run only in desktop/tauri env
         if (RUNNING_IN_TAURI) {
             // https://tauri.app/v1/api/js/modules/fs
-            const filePath = `${downloads}/example_file.txt`;
-            await fs.writeTextFile('example_file.txt', 'oh this is from TAURI! COOLIO.\n', { dir: fs.BaseDirectory.Download });
+            const filePath = `${documents}${fileSep}example_file.txt`;
+            await fs.writeTextFile('example_file.txt', 'oh this is from TAURI! COOLIO.\n', { baseDir: fs.BaseDirectory.Document });
             // show in file explorer: https://github.com/tauri-apps/tauri/issues/4062
-            await shell.open(downloads);
+            await shell.open(documents);
             await invoke('process_file', { filepath: filePath }).then(msg => {
                 console.log(msg === 'Hello from Rust!')
                 notify('Message from Rust', msg);
@@ -61,5 +62,13 @@ export default function ExampleView() {
             // optional stuff:
             default='FALLBACK if key does not exist. This template is located on <0>github.com{{variable}}</0>' t={t} />
         <TextInput label={t('Persistent data')} value={exampleData} onChange={e => setExampleData(e.currentTarget.value)} />
+        <Space />
+        <Button onClick={() => props.setFootersSeen(prev => {
+            const updated = { ...prev };
+            delete updated[FOOTER];
+            return updated;
+        })}>
+            Show Footer Again
+        </Button>
     </>
 }

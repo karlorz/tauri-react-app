@@ -1,153 +1,62 @@
 {
-  "package": {
-    "productName": "tauri-react-app",
-    "version": "../package.json"
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": ""
+    },
+    "publisher": "Unknown Publisher",
+    "copyright": "Copyright Notice",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "resources": [],
+    "externalBin": [],
+    "category": "DeveloperTool",
+    "shortDescription": "",
+    "longDescription": "",
+    "macOS": {
+      "frameworks": [],
+      "minimumSystemVersion": "",
+      "exceptionDomain": "",
+      "signingIdentity": null,
+      "entitlements": null
+    },
+    "linux": {
+      "deb": {
+        "depends": []
+      }
+    },
+    "createUpdaterArtifacts": "v1Compatible"
   },
   "build": {
     "beforeDevCommand": "pnpm start",
     "beforeBuildCommand": "pnpm build",
-    "devPath": "http://localhost:1420",
-    "distDir": "../build",
-    "withGlobalTauri": false
+    "frontendDist": "../build",
+    "devUrl": "http://localhost:1420"
   },
-  "tauri": {
-    "systemTray": {
-      "iconPath": "icons/SystemTray1.ico",
-      "iconAsTemplate": true
-    },
-    "bundle": {
-      "active": true,
-      "targets": "all",
-      "identifier": "com.tauri-app.app",
-      "publisher": "Unknown Publisher",
-      "copyright": "Copyright Notice",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "resources": [],
-      "externalBin": [],
-      "category": "DeveloperTool",
-      "shortDescription": "",
-      "longDescription": "",
-      "deb": {
-        "depends": []
-      },
-      "macOS": {
-        "frameworks": [],
-        "minimumSystemVersion": "",
-        "exceptionDomain": "",
-        "signingIdentity": null,
-        "entitlements": null
-      },
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": ""
-      }
-    },
+  "productName": "tauri-react-app",
+  "mainBinaryName": "tauri-react-app",
+  "version": "../package.json",
+  "identifier": "com.tauri-app.app",
+  "plugins": {
     "updater": {
-      "active": false,
-      "dialog": false,
-      "pubkey": ""
-    },
-    "allowlist": {
-      "all": false,
-      "clipboard": {
-        "all": false,
-        "readText": false,
-        "writeText": false
-      },
-      "dialog": {
-        "all": false,
-        "ask": false,
-        "confirm": false,
-        "message": true,
-        "open": false,
-        "save": false
-      },
-      "fs": {
-        "all": false,
-        "copyFile": false,
-        "createDir": true,
-        "exists": false,
-        "readDir": true,
-        "readFile": false,
-        "removeDir": false,
-        "removeFile": false,
-        "renameFile": false,
-        "scope": ["$APP/*", "$DOCUMENT/*", "$DOWNLOAD/*"],
-        "writeFile": true
-      },
-      "globalShortcut": {
-        "all": false
-      },
-      "http": {
-        "all": false,
-        "request": false,
-        "scope": []
-      },
-      "notification": {
-        "all": true
-      },
-      "os": {
-        "all": true
-      },
-      "path": {
-        "all": true
-      },
-      "process": {
-        "all": false,
-        "exit": false,
-        "relaunch": true,
-        "relaunchDangerousAllowSymlinkMacos": false
-      },
-      "protocol": {
-        "all": false,
-        "asset": false,
-        "assetScope": []
-      },
-      "shell": {
-        "all": false,
-        "execute": false,
-        "open": ".*",
-        "scope": [],
-        "sidecar": false
-      },
-      "window": {
-        "all": false,
-        "center": false,
-        "close": true,
-        "create": false,
-        "hide": false,
-        "maximize": true,
-        "minimize": true,
-        "print": false,
-        "requestUserAttention": false,
-        "setAlwaysOnTop": false,
-        "setCursorGrab": false,
-        "setCursorIcon": false,
-        "setCursorPosition": false,
-        "setCursorVisible": false,
-        "setDecorations": true,
-        "setFocus": true,
-        "setFullscreen": true,
-        "setIcon": false,
-        "setMaxSize": false,
-        "setMinSize": false,
-        "setPosition": false,
-        "setResizable": false,
-        "setSize": true,
-        "setSkipTaskbar": false,
-        "setTitle": false,
-        "show": false,
-        "startDragging": true,
-        "unmaximize": true,
-        "unminimize": true
-      }
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEM4MDI0NEQyQTM2MzBGNjkKUldScEQyT2owa1FDeUMxSFNwZC9uZzBiRHhzbjdaZWE5di9DWjlCVDMxRnVhYkFhdWxqKzVMcHEK",
+      "endpoints": [
+        "https://github.com/karlorz/tauri-react-app/releases/latest/download/latest.json",
+        "https://github.com/karlorz/tauri-react-app/releases/latest/download/latest.json"
+      ]
+    }
+  },
+  "app": {
+    "security": {
+      "csp": "default-src blob: data: filesystem: ws: wss: http: https: tauri: 'unsafe-eval' 'unsafe-inline' 'self' img-src: 'self'; connect-src ipc: http://ipc.localhost"
     },
     "windows": [
       {
@@ -159,11 +68,11 @@
         "fullscreen": false,
         "visible": false,
         "decorations": true,
-        "alwaysOnTop": false
+        "alwaysOnTop": false,
+        "useHttpsScheme": true
       }
     ],
-    "security": {
-      "csp": "default-src blob: data: filesystem: ws: wss: http: https: tauri: 'unsafe-eval' 'unsafe-inline' 'self' img-src: 'self'"
-    }
+
+    "withGlobalTauri": false
   }
 }

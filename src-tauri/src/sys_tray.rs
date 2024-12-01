@@ -1,8 +1,9 @@
 use serde::Serialize;
 use std::sync::Mutex;
 use tauri::{
-  self, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
-  SystemTraySubmenu,
+  Manager, AppHandle, Emitter, Runtime,
+  menu::{Menu, MenuBuilder, SubmenuBuilder},
+  tray::{TrayIconBuilder, TrayIconEvent},
 };
 
 #[derive(Clone, Serialize)]
@@ -24,126 +25,117 @@ pub enum TrayState {
   Playing,
 }
 
-pub fn create_tray_menu(lang: String) -> SystemTrayMenu {
+pub fn create_tray_menu<R: Runtime>(app: &AppHandle<R>, lang: String) -> tauri::Result<Menu<R>> {
   // TODO: tray internationalization https://docs.rs/rust-i18n/latest/rust_i18n/
   // untested, not sure if the macro accepts dynamic languages
   // ENTER rust_i18n::set_locale(lang) IF LOCAL=lang DOES NOT COMPILE
   // .add_item("id".to_string(), t!("Label", locale = lang))
   // .add_item("id".to_string(), t!("Label")
 
-  SystemTrayMenu::new()
-    // https://docs.rs/tauri/latest/tauri/struct.SystemTraySubmenu.html
-    .add_submenu(SystemTraySubmenu::new(
-      "Sub Menu!",
-      SystemTrayMenu::new()
-        .add_item(CustomMenuItem::new(
-          "bf-sep".to_string(),
-          "Before Separator",
-        ))
-        // https://docs.rs/tauri/latest/tauri/enum.SystemTrayMenuItem.html
-        .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(CustomMenuItem::new("af-sep".to_string(), "After Separator")),
-    ))
-    // https://docs.rs/tauri/latest/tauri/struct.CustomMenuItem.html#
-    .add_item(CustomMenuItem::new("quit".to_string(), "Quit"))
-    .add_item(CustomMenuItem::new(
-      "toggle-visibility".to_string(),
-      "Hide Window",
-    ))
-    .add_item(CustomMenuItem::new(
-      "toggle-tray-icon".to_string(),
-      "Toggle the tray icon",
-    ))
+  // Create the submenu
+  let submenu = SubmenuBuilder::new(app, "Sub Menu!")
+    .text("bf-sep", "Before Separator")
+    .separator()
+    .text("af-sep", "After Separator")
+    .build()?;
+
+      // Build the main menu
+  let menu = MenuBuilder::new(app)
+  .item(&submenu)
+  .text("quit", "Quit")
+  .text("toggle-visibility", "Hide Window")
+  .text("toggle-tray-icon", "Toggle the tray icon")
+  .build()?;
+
+  Ok(menu)
 }
 
-pub fn create_system_tray() -> SystemTray {
-  SystemTray::new()
-    .with_menu(create_tray_menu("en".into()))
-    .with_id("main-tray")
-}
+// pub fn create_system_tray<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<TrayIconBuilder<R>> {
+//   Ok(
+//     TrayIconBuilder::with_id("main-tray")
+//       .menu(&create_tray_menu(app, "en".into())?)
+//   )
+// }
 
 #[tauri::command]
 #[allow(unused_must_use)]
 pub fn tray_update_lang(app: tauri::AppHandle, lang: String) {
-  let tray_handle = app.tray_handle();
-  tray_handle.set_menu(create_tray_menu(lang));
+  let tray_handle = app.tray_by_id("main-tray").unwrap();
+  let new_menu = create_tray_menu(&app, lang);
+  tray_handle.set_menu(new_menu.ok()).unwrap();
 }
 
-pub fn tray_event_handler(app: &tauri::AppHandle, event: SystemTrayEvent) {
-  match event {
-    SystemTrayEvent::MenuItemClick { id, .. } => {
-      let main_window = app.get_window("main").unwrap();
-      main_window
-        .emit("systemTray", SystemTrayPayload::new(&id))
-        .unwrap();
-      let item_handle = app.tray_handle().get_item(&id);
-      match id.as_str() {
-        "quit" => {
-          std::process::exit(0);
-        }
-        "toggle-tray-icon" => {
-          let tray_state_mutex = app.state::<Mutex<TrayState>>();
-          let mut tray_state = tray_state_mutex.lock().unwrap();
-          match *tray_state {
-            TrayState::NotPlaying => {
-              app
-                .tray_handle()
-                .set_icon(tauri::Icon::Raw(
-                  include_bytes!("../icons/SystemTray2.ico").to_vec(),
-                ))
-                .unwrap();
-              *tray_state = TrayState::Playing;
-            }
-            TrayState::Playing => {
-              app
-                .tray_handle()
-                .set_icon(tauri::Icon::Raw(
-                  include_bytes!("../icons/SystemTray1.ico").to_vec(),
-                ))
-                .unwrap();
-              *tray_state = TrayState::NotPlaying;
-            }
-            TrayState::Paused => {}
-          };
-        }
-        "toggle-visibility" => {
-          // update menu item example
-          if main_window.is_visible().unwrap() {
-            main_window.hide().unwrap();
-            item_handle.set_title("Show Window").unwrap();
-          } else {
-            main_window.show().unwrap();
-            item_handle.set_title("Hide Window").unwrap();
+pub fn create_tray_icon(app: &tauri::AppHandle) -> tauri::Result<()> {
+  let tray_menu = create_tray_menu(&app, "en".into());
+  let _tray = TrayIconBuilder::with_id("main-tray")
+    // .icon(app.default_window_icon().unwrap().clone())
+    .icon(tauri::image::Image::from_bytes(include_bytes!("../icons/SystemTray1.ico"))?)
+    .menu(&tray_menu?)
+    .on_menu_event(|app, event| {
+      let id = event.id();
+      // let app = tray.app_handle();
+      // let item_handle = app.tray_by_id("main-tray").get_item(&id);
+      if let Some (main_window) = app.get_webview_window("main") {
+        main_window
+          .emit("systemTray", SystemTrayPayload::new(&id.as_ref()))
+          .unwrap();
+      
+        match id.as_ref() {
+          "quit" => {
+            std::process::exit(0);
           }
+          "toggle-tray-icon" => {
+            let tray_state_mutex = app.state::<Mutex<TrayState>>();
+            let mut tray_state = tray_state_mutex.lock().unwrap();
+            let tray_handle = app.tray_by_id("main-tray").unwrap();
+            match *tray_state {
+              TrayState::NotPlaying => {
+                tray_handle
+                  .set_icon(Some(tauri::image::Image::from_bytes(include_bytes!("../icons/SystemTray2.ico")).unwrap()))
+                  .unwrap();
+                *tray_state = TrayState::Playing;
+              }
+              TrayState::Playing => {
+                tray_handle
+                  .set_icon(Some(tauri::image::Image::from_bytes(
+                    include_bytes!("../icons/SystemTray1.ico")).unwrap()
+                  ))
+                  .unwrap();
+                *tray_state = TrayState::NotPlaying;
+              }
+              TrayState::Paused => {}
+            };
+          }
+          "toggle-visibility" => {
+            if main_window.is_visible().unwrap() {
+              main_window.hide().unwrap();
+              // item_handle.set_title("Show Window").unwrap();
+            } else {
+              main_window.show().unwrap();
+              // item_handle.set_title("Hide Window").unwrap();
+            }
+          }
+          _ => {}
         }
-        _ => {}
       }
-    }
-    SystemTrayEvent::LeftClick {
-      position: _,
-      size: _,
-      ..
-    } => {
-      let main_window = app.get_window("main").unwrap();
-      main_window
-        .emit("system-tray", SystemTrayPayload::new("left-click"))
-        .unwrap();
-      println!("system tray received a left click");
-    }
-    SystemTrayEvent::RightClick {
-      position: _,
-      size: _,
-      ..
-    } => {
-      println!("system tray received a right click");
-    }
-    SystemTrayEvent::DoubleClick {
-      position: _,
-      size: _,
-      ..
-    } => {
-      println!("system tray received a double click");
-    }
-    _ => {}
-  }
+    })
+    .on_tray_icon_event(|trap, event| match event {
+      TrayIconEvent::Click { .. } => {
+        let app = trap.app_handle();
+        let main_window = app.get_webview_window("main").unwrap();
+        main_window
+          .emit("system-tray", SystemTrayPayload::new("left-click"))
+          .unwrap();
+        println!("system tray received a left click");
+      }
+      // TrayIconEvent::RightClick { .. } => {
+      //   println!("system tray received a right click");
+      // }
+      TrayIconEvent::DoubleClick { .. } => {
+        println!("system tray received a double click");
+      }
+      _ => {}
+    })
+    .build(app)?;
+  Ok(())
 }

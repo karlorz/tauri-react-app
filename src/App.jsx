@@ -2,9 +2,9 @@ import { ActionIcon, AppShell, AppShellAside, AppShellFooter, AppShellHeader, Ap
 import { useDisclosure, useHotkeys } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import * as tauriEvent from '@tauri-apps/api/event';
-import { relaunch } from '@tauri-apps/api/process';
-import { checkUpdate, installUpdate } from '@tauri-apps/api/updater';
-import { appWindow } from '@tauri-apps/api/window';
+import { relaunch } from '@tauri-apps/plugin-process';
+import { check } from '@tauri-apps/plugin-updater';
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsMoonStarsFill } from 'react-icons/bs';
@@ -21,6 +21,7 @@ import { ScrollToTop } from './components/ScrollToTop';
 import { RUNNING_IN_TAURI, useTauriContext } from './tauri/TauriProvider';
 // imported views need to be added to the `views` list variable
 import ExampleView from './views/ExampleView';
+const appWindow = getCurrentWebviewWindow()
 // fallback for React Suspense
 // import Home from './Views/Home';
 // import About from './Views/About';
@@ -60,11 +61,12 @@ export default function () {
     if (footerRef.current) setNavbarClearance(footerRef.current.clientHeight);
   }, [footersSeen]);
 
-  // Updater integration
-
-  function startInstall(newVersion) {
-    notifications.show({ title: t('Installing update v{{ v }}', { v: newVersion }), message: t('Will relaunch afterwards'), autoClose: false });
-    installUpdate().then(relaunch);
+  async function startInstall(update) {
+    notifications.show({ title: t('Installing update v{{ v }}', { v: update.version }), message: t('Will relaunch afterwards'), autoClose: false });
+    update.downloadAndInstall().then(() =>{
+      // Relaunch the application after installation
+      relaunch();
+    });
   }
 
   // Tauri event listeners (run on mount)
@@ -90,22 +92,37 @@ export default function () {
 
     // update checker
     useEffect(() => {
-      checkUpdate().then(({ shouldUpdate, manifest }) => {
-        if (shouldUpdate) {
-          const { version: newVersion, body: releaseNotes } = manifest;
+      console.log('Checking for updates');
+      check().then((update) => {
+        if (update && update.available) {
+          // setUpdate(update); // Store the Update object
+          const { version: newVersion, body: releaseNotes } = update;
           const color = colorScheme === 'dark' ? 'teal' : 'teal.8';
           notifications.show({
+            id: 'update-available',
+            autoClose: false
+          });
+          notifications.update({
+            id: 'update-available',
             title: t('Update v{{ v }} available', { v: newVersion }),
             color,
             message: <>
               <Text>{releaseNotes}</Text>
-              <Button color={color} style={{ width: '100%' }} onClick={() => startInstall(newVersion)}>{t('Install update and relaunch')}</Button>
+              <Button color={color} style={{ width: '100%' }} onClick={() => startInstall(update)}>{t('Install update and relaunch')}</Button>
             </>,
             autoClose: false
           });
         }
+      })
+      .catch((e) => {
+        console.error(e);
+        notifications.show({
+          title: t('Update check failed'),
+          message: t('Please check your internet connection and try again'),
+          color: 'red'
+        });
       });
-    }, []);
+    }, [t, colorScheme]);
 
     // Handle additional app launches (url, etc.)
     useEffect(() => {
@@ -162,13 +179,20 @@ export default function () {
         className={classes.appShell}>
         <AppShellMain>
           {usingCustomTitleBar && <Space h='xl' />}
+          
           <Routes>
             <Route exact path='/' element={<Navigate to={views[0].path} />} />
             {views.map((view, index) => <Route key={index} exact={view.exact}
               path={view.path} element={
-                <view.component />
-              } />)}
+                view.path === '/example-view' ? (
+                  <view.component setFootersSeen={setFootersSeen} />
+                ) : (
+                  <view.component />
+                )
+              }
+               />)}
           </Routes>
+         
           {/* prevent the footer from covering bottom text of a route view */}
           <Space h={showFooter ? 80 : 50} />
           {scrollbarRef.current && (
