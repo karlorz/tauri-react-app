@@ -10,7 +10,7 @@ import { notifications } from '@mantine/notifications';
 import { APP_NAME, RUNNING_IN_TAURI, useMinWidth, useTauriContext } from '../tauri/TauriProvider';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { createStorage } from '../tauri/storage';
-import { notify } from '../common/utils';
+import { notify, FOOTER } from '../common/utils';
 const appWindow = getCurrentWebviewWindow()
 
 
@@ -18,7 +18,7 @@ function toggleFullscreen() {
     appWindow.isFullscreen().then(x => appWindow.setFullscreen(!x));
 }
 
-export default function ExampleView() {
+export default function ExampleView(props) {
     const { t } = useTranslation();
     const { fileSep, documents, downloads } = useTauriContext();
     // store-plugin will create necessary directories
@@ -62,5 +62,13 @@ export default function ExampleView() {
             // optional stuff:
             default='FALLBACK if key does not exist. This template is located on <0>github.com{{variable}}</0>' t={t} />
         <TextInput label={t('Persistent data')} value={exampleData} onChange={e => setExampleData(e.currentTarget.value)} />
+        <Space />
+        <Button onClick={() => props.setFootersSeen(prev => {
+            const updated = { ...prev };
+            delete updated[FOOTER];
+            return updated;
+        })}>
+            Show Footer Again
+        </Button>
     </>
 }

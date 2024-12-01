@@ -184,8 +184,13 @@ export default function () {
             <Route exact path='/' element={<Navigate to={views[0].path} />} />
             {views.map((view, index) => <Route key={index} exact={view.exact}
               path={view.path} element={
-                <view.component />
-              } />)}
+                view.path === '/example-view' ? (
+                  <view.component setFootersSeen={setFootersSeen} />
+                ) : (
+                  <view.component />
+                )
+              }
+               />)}
           </Routes>
          
           {/* prevent the footer from covering bottom text of a route view */}
