@@ -79,6 +79,9 @@ pub fn run() {
       app
         .emit("newInstance", SingleInstancePayload { args, cwd })
         .unwrap();
+      let _ = app.get_webview_window("main")
+        .expect("no main window")
+        .set_focus();
     }))
     // persistent storage with filesystem
     .plugin(tauri_plugin_store::Builder::default().build())
