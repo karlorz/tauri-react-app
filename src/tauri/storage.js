@@ -35,6 +35,7 @@ export function createStorage(storeName) {
     let loading = useTauriContext().loading;
     const [data, setData] = useState(undefined);
     loading = loading || storeName === undefined || data === undefined;
+    
 
     const localDataRef = useRef();
     const fileStoreRef = useRef();
@@ -42,22 +43,30 @@ export function createStorage(storeName) {
 
     // load data
     useEffect(() => {
-        if (storeName === undefined)
+        if (storeName === undefined) {
             return;
+        }
 
         if (RUNNING_IN_TAURI) {
             fileStoreRef.current = getTauriStore(storeName);
             fileStoreRef.current.get('data').then(
                 value => {
-                    if (value === null) {
+                    if (value === null || value === undefined) {
                         const newValue = {};
                         fileStoreRef.current.set('data', newValue)
-                            .then(() => setData(newValue));
+                            .then(() => {
+                                setData(newValue);
+                            });
                     } else {
                         setData(value);
                     }
                 }
-            )
+            ).catch(error => {
+                console.error('createStorage: Error getting data from Tauri store:', error);
+                // Set empty object as fallback
+                const fallbackData = {};
+                setData(fallbackData);
+            });
         } else {
             localforage.getItem(storeName, (err, value) => {
                 // make store a {} again in catch
@@ -69,7 +78,6 @@ export function createStorage(storeName) {
                         setData(val);
                     });
                 } else {
-                    console.log('err === null?', err === null);
                     setData(value);
                 }
             });
@@ -78,14 +86,12 @@ export function createStorage(storeName) {
 
     const setItem = useCallback((key, newValueOrHandler) => {
         if (loading) return;
-        console.log(newValueOrHandler);
         clearTimeout(timeoutRef.current);
         setData(data => {
             const prev = data[key];
             let newData = data;
             try {
                 newData = { ...data, [key]: newValueOrHandler(prev) };
-                console.log(JSON.stringify(newData));
             } catch (TypeError) {
                 newData = { ...data, [key]: newValueOrHandler };
             }

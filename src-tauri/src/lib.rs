@@ -21,7 +21,7 @@ mod sys_tray;
 mod utils;
 
 use sys_tray::{create_tray_icon, tray_update_lang, TrayState};
-use utils::{long_running_thread, show_item_in_folder, show_main_window};
+use utils::{long_running_thread, show_item_in_folder};
 
 #[derive(Clone, Serialize)]
 struct SingleInstancePayload {

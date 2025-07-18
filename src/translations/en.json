@@ -1,3 +1,7 @@
 {
+    "ExampleView": "Example View",
+    "Modern Desktop App Examples": "Modern Desktop App Examples",
+    "Interpolating components in translations": "Interpolating components in translations",
+    "Persistent data": "Persistent data",
     "transExample": "This template is located on <0>github.com{{variable}}</0>"
 }

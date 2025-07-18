@@ -6,8 +6,6 @@ import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { currentMonitor, getCurrentWindow } from '@tauri-apps/api/window';
 import React, { useContext, useEffect, useState } from 'react';
 import tauriConfJson from '../../src-tauri/tauri.conf.json';
-const appWindow = getCurrentWebviewWindow()
-const getCurrent = getCurrentWindow;
 
 const WIN32_CUSTOM_TITLEBAR = true;
 export const APP_NAME = tauriConfJson.productName;
@@ -43,7 +41,9 @@ export function TauriProvider({ children }) {
   // false because might be running in web
   const [usingCustomTitleBar, setUsingCustomTitleBar] = useState(false);
 
+
   if (RUNNING_IN_TAURI) {
+    const appWindow = getCurrentWebviewWindow();
     const tauriInterval = useInterval(() => {
       appWindow.isFullscreen().then(setFullscreen);
     }, 200);
@@ -57,6 +57,7 @@ export function TauriProvider({ children }) {
       if (osType === 'windows') {
         appWindow.setDecorations(!WIN32_CUSTOM_TITLEBAR);
         if (WIN32_CUSTOM_TITLEBAR) {
+          const root = document.documentElement;
           root.style.setProperty('--titlebar-height', '28px');
         }
       }
@@ -78,7 +79,7 @@ export function TauriProvider({ children }) {
         const _fileSep = _osType === 'windows' ? '\\' : '/';
         setFileSep(_fileSep);
         await fs.mkdir(APP_NAME, { baseDir: fs.BaseDirectory.Document, recursive: true });
-        setAppDocuments(`${_documents}${APP_NAME}`);
+        setAppDocuments(`${_documents}${_fileSep}${APP_NAME}`);
         setLoading(false);
         // if you aren't using the window-state plugin,
         //  you need to manually show the window (uncomment code)
@@ -88,7 +89,12 @@ export function TauriProvider({ children }) {
         //  so we should show the window when the react app loads
         // See: https://github.com/tauri-apps/tauri/issues/1564
       }
-      callTauriAPIs().catch(console.error);
+      callTauriAPIs();
+    }, []);
+  } else {
+    // When not running in Tauri (e.g., web development), set loading to false
+    useEffect(() => {
+      setLoading(false);
     }, []);
   }
 
@@ -123,7 +129,8 @@ export function useMinWidth(minWidth) {
       async function resizeWindow() {
         // to set a size consistently across devices,
         //  one must use LogicalSize (Physical cannot be relied upon)
-        const physicalSize = await getCurrent().innerSize();
+        const currentWindow = getCurrentWindow();
+        const physicalSize = await currentWindow.innerSize();
         // Since innerSize returns Physical size, we need
         //   to get the current monitor scale factor
         //   to convert the physical size into a logical size
@@ -132,7 +139,7 @@ export function useMinWidth(minWidth) {
         const logicalSize = physicalSize.toLogical(scaleFactor);
         if (logicalSize.width < minWidth) {
           logicalSize.width = minWidth;
-          await getCurrent().setSize(logicalSize);
+          await currentWindow.setSize(logicalSize);
         }
       }
       resizeWindow().catch(console.error);

@@ -77,12 +77,6 @@ pub fn show_item_in_folder(path: String) -> Result<(), String> {
   Ok(())
 }
 
-// useful if not saving the window state
-#[tauri::command]
-pub fn show_main_window(window: tauri::Window) {
-  // replace "main" by the name of your window
-  window.get_webview_window("main").unwrap().show().unwrap();
-}
 
 #[derive(Clone, Serialize)]
 struct LongRunningThreadStruct {

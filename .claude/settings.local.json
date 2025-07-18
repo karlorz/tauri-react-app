@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node:*)",
+      "Bash(npm:*)",
+      "Bash(corepack:*)",
+      "Bash(pnpm:*)",
+      "Bash(lsof:*)"
+    ],
+    "deny": []
+  }
+}

@@ -1,4 +1,8 @@
 {
+    "ExampleView": "Vue d'exemple",
+    "Modern Desktop App Examples": "Exemples d'applications de bureau modernes",
+    "Interpolating components in translations": "Interpolation de composants dans les traductions",
+    "Persistent data": "Données persistantes",
     "Minimize": "Réduire",
     "Maximize": "Agrandir",
     "Restore Down": "Niveau inf.",

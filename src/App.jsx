@@ -21,7 +21,6 @@ import { ScrollToTop } from './components/ScrollToTop';
 import { RUNNING_IN_TAURI, useTauriContext } from './tauri/TauriProvider';
 // imported views need to be added to the `views` list variable
 import ExampleView from './views/ExampleView';
-const appWindow = getCurrentWebviewWindow()
 // fallback for React Suspense
 // import Home from './Views/Home';
 // import About from './Views/About';
@@ -127,6 +126,7 @@ export default function () {
     // Handle additional app launches (url, etc.)
     useEffect(() => {
       const promise = tauriEvent.listen('newInstance', async ({ payload, ...eventObj }) => {
+        const appWindow = getCurrentWebviewWindow();
         if (!(await appWindow.isVisible())) await appWindow.show();
 
         if (await appWindow.isMinimized()) {

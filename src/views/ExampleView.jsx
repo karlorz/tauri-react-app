@@ -10,39 +10,51 @@ import { notifications } from '@mantine/notifications';
 import { APP_NAME, RUNNING_IN_TAURI, useMinWidth, useTauriContext } from '../tauri/TauriProvider';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { createStorage } from '../tauri/storage';
-import { notify, FOOTER } from '../common/utils';
-const appWindow = getCurrentWebviewWindow()
-
+import { FOOTER } from '../common/utils';
 
 function toggleFullscreen() {
-    appWindow.isFullscreen().then(x => appWindow.setFullscreen(!x));
+    if (RUNNING_IN_TAURI) {
+        const appWindow = getCurrentWebviewWindow();
+        appWindow.isFullscreen().then(x => appWindow.setFullscreen(!x));
+    }
 }
 
 export default function ExampleView(props) {
     const { t } = useTranslation();
     const { fileSep, documents, downloads } = useTauriContext();
     // store-plugin will create necessary directories
-    const storeName = `${documents}${fileSep}${APP_NAME}${fileSep}example_view.dat`;
-    // const storeName = 'data.dat';
+    const storeName = documents ? `${documents}${fileSep}${APP_NAME}${fileSep}example_view.dat` : 'example_view.dat';
     const { use: useKVP, loading, data } = createStorage(storeName);
     const [exampleData, setExampleData] = useKVP('exampleKey', '');
 
     useMinWidth(1000);
 
+
     // fs example
     async function createFile() {
         // run only in desktop/tauri env
         if (RUNNING_IN_TAURI) {
-            // https://tauri.app/v1/api/js/modules/fs
-            const filePath = `${documents}${fileSep}example_file.txt`;
-            await fs.writeTextFile('example_file.txt', 'oh this is from TAURI! COOLIO.\n', { baseDir: fs.BaseDirectory.Document });
-            // show in file explorer: https://github.com/tauri-apps/tauri/issues/4062
-            await shell.open(documents);
-            await invoke('process_file', { filepath: filePath }).then(msg => {
+            try {
+                // https://tauri.app/v1/api/js/modules/fs
+                const filePath = `${documents}${fileSep}example_file.txt`;
+                await fs.writeTextFile('example_file.txt', 'oh this is from TAURI! COOLIO.\n', { baseDir: fs.BaseDirectory.Document });
+                
+                // show in file explorer: https://github.com/tauri-apps/tauri/issues/4062
+                try {
+                    await shell.open(documents);
+                } catch (error) {
+                    console.warn('Failed to open documents folder:', error);
+                }
+                
+                const msg = await invoke('process_file', { filepath: filePath });
                 console.log(msg === 'Hello from Rust!')
-                notify('Message from Rust', msg);
-                notifications.show({ title: 'Message from Rust', message: msg });
-            });
+                console.log('Message from Rust:', msg);
+                // notify('Message from Rust', msg);
+                // notifications.show({ title: 'Message from Rust', message: msg });
+            } catch (error) {
+                console.error('Error in createFile:', error);
+                notifications.show({ title: 'Error', message: 'Failed to create file: ' + error.message });
+            }
         }
     }
     // <> is an alias for <React.Fragment>
